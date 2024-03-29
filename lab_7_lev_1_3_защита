@@ -1,0 +1,133 @@
+namespace ConsoleApp1
+  {
+    public abstract class Answer
+    {
+        protected string _surname;
+        protected int _number;
+        public string Surname => _surname;
+        public int Number => _number;
+
+
+        public Answer(string surname, int number)
+        {
+            _surname = surname;
+            _number = number;
+
+        }
+
+
+        public virtual void Print()
+        {
+
+            double n = _number;
+            Console.WriteLine("Фамилия {0}   \t {1} голосов", _surname, _number);
+        }
+        private static int FindPivot(Answer[] ans, int mini, int maxi)
+        {
+            
+            int pivot = mini - 1;
+            for (int i = mini; i < maxi; i++)
+            {
+                if (ans[i].Number > ans[maxi].Number)
+                {
+                    pivot++;
+                    Answer temp = ans[pivot];
+                    ans[pivot] = ans[i];
+                    ans[i] = temp;
+                }
+            }
+
+            pivot++;
+            Answer temp1 = ans[pivot];
+            ans[pivot] = ans[maxi];
+            ans[maxi] = temp1;
+
+            return pivot;
+        }
+        public static void Quicksort(Answer[] ans, int mini, int maxi)
+        {
+            if (mini >= maxi)
+            {
+                return;
+            }
+            int pivot = FindPivot(ans, mini, maxi);
+            Quicksort(ans, mini, pivot - 1);
+            Quicksort(ans, pivot + 1, maxi);
+        }
+    }
+    
+class PersonOfYear : Answer
+    {
+        private static int _totalPersonVotes = 0;
+        public PersonOfYear(string surname, int number) : base(surname, number)
+        {
+            _totalPersonVotes += number;
+        }
+        public override void Print()
+        {
+
+            Console.WriteLine("Фамилия {0}   \t {1} голосов\t доля {2}%", _surname, _number, ((_number / (double)_totalPersonVotes) * 100));
+        }
+        class DiscoveryOfYear : Answer
+        {
+            private static int _totalopen;
+            private readonly int Totalopen;
+            private static int _totalDiscoveryVotes = 0;
+            public DiscoveryOfYear(string surname, int number) : base(surname, number)
+            {
+                _totalDiscoveryVotes += number;
+            }
+            public override void Print()
+            {
+
+                Console.WriteLine("Фамилия {0}\t {1} голосов\t доля {2:F2}%", _surname, _number, ((_number / (double)_totalDiscoveryVotes) * 100));
+            }
+        }
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                PersonOfYear[] per = new PersonOfYear[8];
+                per[0] = new PersonOfYear("Нагиев", 8);
+                per[1] = new PersonOfYear("Ургант", 4);
+                per[2] = new PersonOfYear("Малышева", 2);
+                per[3] = new PersonOfYear("Пелевин", 10);
+                per[4] = new PersonOfYear("Малахов", 7);
+                per[5] = new PersonOfYear("Янковский", 5);
+                per[6] = new PersonOfYear("Богомолов", 3);
+                per[7] = new PersonOfYear("Пересильд", 1);
+
+                DiscoveryOfYear[] dis = new DiscoveryOfYear[6];
+                dis[0] = new DiscoveryOfYear("Лекарство от бессоницы", 5);
+                dis[1] = new DiscoveryOfYear("Солнечная батарея     ", 7);
+                dis[2] = new DiscoveryOfYear("Электрокар            ", 2);
+                dis[3] = new DiscoveryOfYear("VR очки               ", 10);
+                dis[4] = new DiscoveryOfYear("3D принтер            ", 5);
+                dis[5] = new DiscoveryOfYear("Метавселенные         ", 3);
+
+                Answer.Quicksort(per, 0, per.Length - 1);
+                Answer.Quicksort(dis, 0, dis.Length - 1);
+
+
+                Console.WriteLine("PersonOfYear");
+                for (int i = 0; i < 5; i++)
+                {
+                    per[i].Print();
+                }
+
+                Console.WriteLine("");
+                Console.WriteLine("DiscoveryOfYear");
+                for (int i = 0; i < 5; i++)
+                {
+                    dis[i].Print();
+
+                }
+                Console.ReadKey();
+            }
+            
+
+        }
+
+    }
+
+}
