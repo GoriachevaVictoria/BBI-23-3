@@ -1,0 +1,102 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace kr
+{
+    abstract class Task
+    {
+        protected string text;
+        public Task(string text)
+        {
+            this.text = text;
+        }
+    }
+    class Task1 : Task
+    {
+        public Task1(string text) : base(text) { }
+        public override string ToString()
+        {
+            return Let(text).ToString();
+        }
+        int[] fr = new int[31];
+        private char Let(string text)
+        {
+           foreach (char c in text.ToLower())
+            {
+                if (char.IsLetter(c))
+                {
+                    int i = c - 'а';
+                    fr[i]++;
+                }
+            }
+            int maxfr = 0;
+            char maxch = '\0';
+            for (int i = 0; i < 31; i++)
+            {
+                if (fr[i] > maxfr)
+                {
+                    maxfr = fr[i];
+                    maxch = (char)('а' + i);
+                }
+            }
+            return maxch;
+        }
+    }
+    
+    class Task2 : Task
+    {
+        private bool b = true;
+        public Task2(string text) : base(text){}
+
+        public override string ToString()
+        {
+            return S(text).ToString();
+        }
+        private int cnt1 = 0;
+        private int cnt2 = 0;
+        private bool S(string text)
+        {
+            string[] words = text.Split(" .,-\"?:;!".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Contains("(") || words[i].Contains("{") || words[i].Contains("["))
+                {
+                    cnt1++;
+                }
+            }
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Contains(")") || words[i].Contains("}") || words[i].Contains("]"))
+                {
+                    cnt2++;
+                }
+            }
+
+            if (cnt1 == cnt2)
+            {
+                return b;
+            }
+            else
+            {
+                return !b;
+            }
+        }
+
+    }
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Task[] tasks = { new Task1("абаааааааб БББББББББББББББББББББББББББББББББББББ ДДДДДДДДДДДДДдддддддддддддДДДДДДДДДДДДДДДДДДДДДДДДД"),
+            new Task2("это (текст [дан {как} пример] просто) пример)") };
+            Console.WriteLine(tasks[0]);
+            Console.WriteLine(tasks[1]);
+        }
+    }
+}
