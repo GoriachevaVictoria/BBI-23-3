@@ -1,0 +1,316 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace лаб_8
+{
+    abstract class Task
+    {
+        public Task(string text) { }
+        protected abstract void ParseText(string text);
+    }
+  class Task8 : Task
+     {
+         private string formattedText;
+
+         public Task8(string text) : base(text)
+         {
+             ParseText(text);
+         }
+         public override string ToString()
+         {
+             return formattedText;
+         }
+         protected override void ParseText(string text)
+         {
+             var lines = new List<string>();
+             var words = text.Split(' ');
+             var currentLine = new StringBuilder();
+
+             for (int i = 0; i < words.Length; i++)
+             {
+                 if (currentLine.Length + words[i].Length > 50)
+                 {
+                     lines.Add(currentLine.ToString().PadRight(50));
+                     currentLine.Clear();
+                 }
+                 currentLine.Append(words[i]).Append(' ');
+             }
+             lines.Add(currentLine.ToString().PadRight(50));
+             formattedText = string.Join("\n", lines);
+         }
+
+     }
+    
+    class Task9 : Task
+    {
+        private Dictionary<string, char> codeTable;
+        private string formatted;
+        public Task9(string text) : base(text)
+        {
+            codeTable = new Dictionary<string, char>();
+            ParseText(text);
+        }
+
+        protected override void ParseText(string text)
+        {
+            Dictionary<string, int> frequency = new Dictionary<string, int>();
+
+            for (int i = 0; i < text.Length - 1; i = i + 2)
+            {
+                string pair = text.Substring(i, 2);
+                if (!frequency.ContainsKey(pair))
+                {
+                    frequency[pair] = 1;
+                }
+                else
+                {
+                    frequency[pair]++;
+                }
+            }
+
+            var sortedPairs = frequency.OrderByDescending(pair => pair.Value).Select(pair => pair.Key);
+
+            var topPairs = sortedPairs.Take(7);
+
+            char code = '#';
+            foreach (var pair in topPairs)
+            {
+                codeTable[pair] = code++;
+            }
+
+            foreach (var pair in topPairs)
+            {
+                formatted = text.Replace(pair, codeTable[pair].ToString());
+            }
+            
+            Console.WriteLine("Таблица:");
+            foreach (var entry in codeTable)
+            {
+                Console.WriteLine("{0} - {1}", entry.Key, entry.Value);
+            }
+        }
+
+        public override string ToString()
+        {
+            return formatted;
+        }
+
+        public Dictionary<string, char> GetCodeTable()
+        {
+            return codeTable;
+        }
+    }
+    class Task10 : Task
+    {
+        private string decodedText;
+        private Task9 task9;
+
+        public Task10(Task9 task9) : base(task9.ToString())
+        {
+            this.task9 = task9;
+            this.decodedText = DecodeText(task9.ToString(), task9.GetCodeTable());
+            
+        }
+
+        private string DecodeText(string encodedText, Dictionary<string, char> codeTable)
+        {
+            var reversedCodeTable = codeTable.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+            var sb = new StringBuilder();
+
+            foreach (char c in encodedText)
+            {
+                if (reversedCodeTable.ContainsKey(c))
+                {
+                    sb.Append(reversedCodeTable[c]);
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            return decodedText;
+        }
+        protected override void ParseText(string text)
+        {}
+
+    }
+    
+
+     class Task12 : Task
+ {
+     private Dictionary<string, string> wordCodes;
+
+     public Task12(string text) : base(text)
+     {
+         wordCodes = new Dictionary<string, string>();
+
+         wordCodes.Add("а", "1");
+         wordCodes.Add("в", "2");
+         wordCodes.Add("не", "3");
+         wordCodes.Add("и", "4");
+         wordCodes.Add("с", "5");
+         wordCodes.Add("как", "6");
+         wordCodes.Add("по", "7");
+         wordCodes.Add("о", "8");
+
+         wordCodes.Add("the", "11");
+         wordCodes.Add("to", "22");
+         wordCodes.Add("of", "33");
+         wordCodes.Add("and", "44");
+         wordCodes.Add("a", "55");
+         wordCodes.Add("in", "66");
+         wordCodes.Add("I", "77");
+
+         ParseText(text);
+     }
+
+     protected override void ParseText(string text)
+     {
+         var encodedText = new StringBuilder();
+         foreach (var word in text.Split())
+         {
+             if (wordCodes.TryGetValue(word, out string code))
+             {
+                 encodedText.Append(code).Append(" ");
+             }
+             else
+             {
+                 encodedText.Append(word).Append(" ");
+             }
+         }
+         Console.WriteLine("Закодированный текст:");
+         Console.WriteLine(encodedText.ToString().Trim());
+
+         var decodedText = new StringBuilder();
+         foreach (var word in encodedText.ToString().Trim().Split())
+         {
+             if (wordCodes.ContainsValue(word))
+             {
+                 decodedText.Append(wordCodes.First(kv => kv.Value == word).Key).Append(" ");
+             }
+             else
+             {
+                 decodedText.Append(word).Append(" ");
+             }
+         }
+         Console.WriteLine("Раскодированный текст:");
+         Console.WriteLine(decodedText.ToString().Trim());
+     }
+ }
+ class Task13 : Task
+ {
+     protected Dictionary<char, int> letterCounts = new Dictionary<char, int>();
+
+     public Task13(string text) : base(text)
+     {
+         ParseText(text);
+     }
+
+     protected override void ParseText(string text)
+     {
+         foreach (char l in text)
+         {
+             if (char.IsLetter(l))
+             {
+                 char Letter = char.ToUpper(l);
+                 if (!letterCounts.ContainsKey(Letter))
+                 {
+                     letterCounts[Letter] = 0;
+                 }
+
+                 letterCounts[Letter]++;
+             }
+         }
+     }
+
+     public override string ToString()
+     {
+         double totalLetters = letterCounts.Values.Sum();
+         var sortedLetterCounts = letterCounts.OrderBy(x => x.Key);
+
+         StringBuilder result = new StringBuilder();
+         foreach (var letterCount in sortedLetterCounts)
+         {
+             double percentage = (letterCount.Value / totalLetters) * 100;
+             result.AppendLine($"{letterCount.Key}: {percentage:F2}%");
+
+         }
+
+         return result.ToString();
+     }
+ }
+ class Task15 : Task
+ {
+     public Task15(string text) : base(text)
+     {
+         ParseText(text);
+     }
+     protected int sum = 0;
+     protected override void ParseText(string text)
+     {
+
+         foreach (Match match in Regex.Matches(text, @"\d+"))
+         {
+             sum += int.Parse(match.Value);
+         }
+
+     }
+
+     public override string ToString()
+     {
+         Console.WriteLine("Сумма чисел:");
+         return sum.ToString();
+     }
+ }
+
+    class Program
+        {
+            public static void Main()
+            {
+                string text = "1 июля 2015 года Греция объявила о дефолте по государственному долгу, став первой развитой страной в истории, которая не смогла выплатить свои долговые обязательства в полном объеме. Сумма дефолта составила порядка 1,6 миллиарда евро. Этому предшествовали долгие переговоры с международными кредиторами, такими как Международный валютный фонд (МВФ), Европейский центральный банк (ЕЦБ) и Европейская комиссия (ЕК), о программах финансовой помощи и реструктуризации долга. Основными причинами дефолта стали недостаточная эффективность реформ, направленных на улучшение финансовой стабильности страны, а также политическая нестабильность, что вызвало потерю доверия со стороны международных инвесторов и кредиторов. Последствия дефолта оказались глубокими и долгосрочными: сокращение кредитного рейтинга страны, увеличение затрат на заемный капитал, рост стоимости заимствований и утрата доверия со стороны международных инвесторов.";
+                //string text = "William Shakespeare, widely regarded as one of the greatest writers in the English language, authored a total of 37 plays, along with numerous poems and sonnets. He was born in Stratford-upon-Avon, England, in 1564, and died in 1616. Shakespeare's most famous works, including \"Romeo and Juliet,\" \"Hamlet,\" \"Macbeth,\" and \"Othello,\" were written during the late 16th and early 17th centuries. \"Romeo and Juliet,\" a tragic tale of young love, was penned around 1595. \"Hamlet,\" one of his most celebrated tragedies, was written in the early 1600s, followed by \"Macbeth,\" a gripping drama exploring themes of ambition and power, around 1606. \"Othello,\" a tragedy revolving around jealousy and deceit, was also composed during this period, believed to be around 1603.";
+                Task8 task8 = new Task8(text);
+                Console.WriteLine("Задание 8:");
+                Console.WriteLine(task8);
+            
+                Console.WriteLine();
+                Console.WriteLine("Задание 9:");
+                Task9 task9 = new Task9(text);
+                Console.WriteLine(task9);
+
+                Console.WriteLine();
+                Task10 task10 = new Task10(task9);
+                Console.WriteLine("Task 10:");
+                Console.WriteLine(task10);
+            
+                Console.WriteLine();
+                Task12 task12 = new Task12(text);
+                Console.WriteLine("Задание 12:");
+                Console.WriteLine(task12);
+
+                Console.WriteLine();
+                Task13 task13 = new Task13(text);
+                Console.WriteLine("Задание 13:");
+                Console.WriteLine(task13);
+
+                Console.WriteLine();
+                Task15 task15 = new Task15(text);
+                Console.WriteLine("Задание 15:");
+                Console.WriteLine(task15);
+            }
+        }
+}
+
+    
