@@ -1,0 +1,156 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace лаб_8
+{
+    abstract class Task
+    {
+        public Task(string text) { }
+        protected abstract void ParseText(string text);
+    }
+    class Task8 : Task
+    {
+        private string formattedText;
+
+        public Task8(string text) : base(text)
+        {
+            ParseText(text);
+        }
+        public override string ToString()
+        {
+            return formattedText;
+        }
+
+        protected override void ParseText(string text)
+        {
+            var words = text.Split(' ');
+            var lines = new List<string>();
+            var currentLine = new StringBuilder();
+            int max = 50;
+
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (currentLine.Length + words[i].Length + 1 > max)
+                {
+                    string[] wordsInLine = currentLine.ToString().TrimEnd().Split(' ');
+                    int gap = wordsInLine.Length - 1;
+                    if (gap >= 0)
+                    {
+                        int add = max - currentLine.Length;
+                        int spacesBetweenWords = add / gap;
+                        int extraSpaces = add - spacesBetweenWords * gap;
+
+                        StringBuilder newLineWithSpaces = new StringBuilder();
+                        for (int k = 0; k < wordsInLine.Length - 1; k++)
+                        {
+                            newLineWithSpaces.Append(wordsInLine[k]);
+                            newLineWithSpaces.Append(' ', spacesBetweenWords + 1);
+                            if (extraSpaces > 0)
+                            {
+                                newLineWithSpaces.Append(' ');
+                                extraSpaces--;
+                            }
+                        }
+                        newLineWithSpaces.Append(wordsInLine[wordsInLine.Length - 1]);
+                        lines.Add(newLineWithSpaces.ToString());
+                    }
+                    else
+                    {
+                        lines.Add(currentLine.ToString().PadRight(max));
+                    }
+                    currentLine.Clear();
+                }
+                currentLine.Append(words[i]).Append(' ');
+            }
+            lines.Add(currentLine.ToString().TrimEnd());
+            formattedText = string.Join("\n", lines);
+        }
+    }
+    
+
+    class Task12 : Task
+    {
+        private Dictionary<string, string> wordCodes;
+
+        public Task12(string text) : base(text)
+        {
+            wordCodes = new Dictionary<string, string>();
+
+            wordCodes.Add("а", "!");
+            wordCodes.Add("в", "@");
+            wordCodes.Add("не", "%");
+            wordCodes.Add("и", "^");
+            wordCodes.Add("с", "&");
+            wordCodes.Add("как", "*");
+            wordCodes.Add("по", "/");
+            wordCodes.Add("о", "|");
+
+            wordCodes.Add("the", "!!");
+            wordCodes.Add("to", "@@");
+            wordCodes.Add("of", "##");
+            wordCodes.Add("and", "%%");
+            wordCodes.Add("a", "^^");
+            wordCodes.Add("in", "&&");
+            wordCodes.Add("I", "**");
+
+            ParseText(text);
+        }
+
+        protected override void ParseText(string text)
+        {
+            var encodedText = new StringBuilder();
+            foreach (var word in text.Split())
+            {
+                if (wordCodes.TryGetValue(word, out string code))
+                {
+                    encodedText.Append(code).Append(" ");
+                }
+                else
+                {
+                    encodedText.Append(word).Append(" ");
+                }
+            }
+            Console.WriteLine("Закодированный текст:");
+            Console.WriteLine(encodedText.ToString().Trim());
+
+            var decodedText = new StringBuilder();
+            foreach (var word in encodedText.ToString().Trim().Split())
+            {
+                if (wordCodes.ContainsValue(word))
+                {
+                    decodedText.Append(wordCodes.First(kv => kv.Value == word).Key).Append(" ");
+                }
+                else
+                {
+                    decodedText.Append(word).Append(" ");
+                }
+            }
+            Console.WriteLine("Раскодированный текст:");
+            Console.WriteLine(decodedText.ToString().Trim());
+        }
+    }
+    
+    class Program
+    {
+        public static void Main()
+        {
+            string text = "1 июля 2015 года Греция объявила о дефолте по государственному долгу, став первой развитой страной в истории, которая не смогла выплатить свои долговые обязательства в полном объеме. Сумма дефолта составила порядка 1,6 миллиарда евро. Этому предшествовали долгие переговоры с международными кредиторами, такими как Международный валютный фонд (МВФ), Европейский центральный банк (ЕЦБ) и Европейская комиссия (ЕК), о программах финансовой помощи и реструктуризации долга. Основными причинами дефолта стали недостаточная эффективность реформ, направленных на улучшение финансовой стабильности страны, а также политическая нестабильность, что вызвало потерю доверия со стороны международных инвесторов и кредиторов. Последствия дефолта оказались глубокими и долгосрочными: сокращение кредитного рейтинга страны, увеличение затрат на заемный капитал, рост стоимости заимствований и утрата доверия со стороны международных инвесторов.";
+            //string text = "William Shakespeare, widely regarded as one of the greatest writers in the English language, authored a total of 37 plays, along with numerous poems and sonnets. He was born in Stratford-upon-Avon, England, in 1564, and died in 1616. Shakespeare's most famous works, including \"Romeo and Juliet,\" \"Hamlet,\" \"Macbeth,\" and \"Othello,\" were written during the late 16th and early 17th centuries. \"Romeo and Juliet,\" a tragic tale of young love, was penned around 1595. \"Hamlet,\" one of his most celebrated tragedies, was written in the early 1600s, followed by \"Macbeth,\" a gripping drama exploring themes of ambition and power, around 1606. \"Othello,\" a tragedy revolving around jealousy and deceit, was also composed during this period, believed to be around 1603.";
+            Task8 task8 = new Task8(text);
+            Console.WriteLine("Задание 8:");
+            Console.WriteLine(task8);
+
+            Console.WriteLine();
+            Console.WriteLine("Задание 12:");
+            Task12 task12 = new Task12(text);
+            Console.WriteLine(task12);
+
+        }
+    }
+}
